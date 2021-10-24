@@ -1,0 +1,66 @@
+---
+- name: create download folder for go-ipfs
+  become: yes
+  file:
+    state: directory
+    owner: root
+    group: root
+    dest: "{{ ipfs_path }}/{{ ipfs_version }}"
+
+- name: download and unpack go-ipfs
+  block:
+    - name: download go-ipfs
+      become: yes
+      get_url:
+        url: "https://dist.ipfs.io/go-ipfs/{{ ipfs_version }}/go-ipfs_{{ ipfs_version }}_linux-{{ ipfs_arch }}.tar.gz"
+        dest: "{{ ipfs_path }}/{{ ipfs_version }}/go-ipfs.tar.gz"
+        timeout: 30
+
+    - name: unpack go-ipfs
+      become: yes
+      unarchive:
+        remote_src: yes
+        src: "{{ ipfs_path }}/{{ ipfs_version }}/go-ipfs.tar.gz"
+        dest: "{{ ipfs_path }}/{{ ipfs_version }}"
+        creates: "{{ ipfs_path }}/{{ ipfs_version }}/go-ipfs"
+
+    - name: link go-ipfs executable
+      become: yes
+      file:
+        state: link
+        owner: root
+        group: root
+        dest: /usr/local/bin/ipfs
+        src: "{{ ipfs_path }}/{{ ipfs_version }}/go-ipfs/ipfs"
+
+- name: install ipfs systemd service
+  become: yes
+  template:
+    src: service.j2
+    dest: /etc/systemd/system/ipfs.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: init go-ipfs
+  become: yes
+  become_user: root
+  command: /usr/local/bin/ipfs init --empty-repo
+  args:
+    creates: /root/.ipfs/config
+
+- name: copy config
+  become: yes
+  template:
+    src: config.j2
+    dest: /root/.ipfs/config
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable and restart go-ipfs
+  become: yes
+  service:
+    name: ipfs
+    state: restarted
+    enabled: yes

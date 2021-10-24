@@ -1,0 +1,12 @@
+[Unit]
+Description=IPFS daemon
+After=network.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=simple
+User=root
+Restart=always
+ExecStart=/usr/local/bin/ipfs daemon --migrate {%- if ipfs_enable_gc %} --enable-gc{% endif %}
+
+[Install]
+WantedBy=multi-user.target

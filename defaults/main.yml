@@ -1,0 +1,9 @@
+ipfs_version: v0.7.0
+ipfs_arch: amd64
+ipfs_enable_gc: false
+ipfs_home: /home/ipfs
+ipfs_storage_max: 10GB
+ipfs_api_ip: 127.0.0.1
+ipfs_api_port: 5001
+ipfs_getaway_ip: 127.0.0.1
+ipfs_getaway_port: 8080
